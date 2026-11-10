@@ -1,19 +1,14 @@
 /**
- * GOOGLE APPS SCRIPT - ĐỒNG BỘ XÁC NHẬN LƯƠNG TRỰC TIẾP VÀO GOOGLE SHEETS
+ * GOOGLE APPS SCRIPT - ĐỒNG BỘ DỮ LIỆU XÁC NHẬN LƯƠNG
+ * Áp dụng cho bảng tính:
+ * https://docs.google.com/spreadsheets/d/1o6rm3jQDDXxYWZ9c_Ff7TVMcz-ULHocDu6pzsANYjYE/edit
  * 
- * Hướng dẫn cài đặt (Chỉ làm 1 lần trong 1 phút):
- * 1. Mở file Google Sheets xác nhận của bạn:
- *    https://docs.google.com/spreadsheets/d/1z0ImZCT3GG6pYHN3NCzTq5kD4LyEXpZY/edit
- * 2. Trên thanh menu, chọn: Tiện ích mở rộng (Extensions) > Apps Script
- * 3. Xóa hết code cũ, copy và dán toàn bộ đoạn code này vào.
- * 4. Bấm nút "Lưu" (biểu tượng đĩa mềm 💾 hoặc Ctrl + S).
- * 5. Bấm nút "Triển khai" (Deploy) màu xanh ở góc trên bên phải > chọn "Tùy chọn triển khai mới" (New deployment).
- *    - Loại: Chọn "Ứng dụng web" (Web app)
- *    - Mô tả: Đồng bộ xác nhận lương
- *    - Thực thi dưới dạng (Execute as): "Tôi" (Me)
- *    - Ai có quyền truy cập (Who has access): "Bất kỳ ai" (Anyone)
- * 6. Bấm "Triển khai" (Deploy) > Cấp quyền (Authorize access nếu có hỏi) > Copy đường link "URL ứng dụng web".
- * 7. Dán link URL ứng dụng web vào file config.json của web.
+ * Cấu trúc cột của bảng tính này:
+ * - Cột 1 (A): STT
+ * - Cột 2 (B): MS (Mã số: B001, B002, ...)
+ * - Cột 3 (C): Họ và tên (Hà Ngọc Minh Thi, Nguyễn Phạm Đại, ...)
+ * - Cột 4 (D): Xác nhận về thông tin (Đúng thông tin / Chưa đúng thông tin)
+ * - Cột 5 (E): Ghi chú (Ý kiến phản hồi)
  */
 
 function doPost(e) {
@@ -21,16 +16,13 @@ function doPost(e) {
     var raw = e.postData.contents;
     var data = JSON.parse(raw);
     
-    var cccd = String(data.cccd || "").trim();
+    var ms = String(data.ms || "").trim().toUpperCase();
+    var hoTen = String(data.ho_ten || "").trim().toLowerCase();
     var status = String(data.status || "").trim();
     var note = String(data.note || "").trim();
 
-    if (cccd.length < 12 && cccd.length > 0) {
-      cccd = ("000000000000" + cccd).slice(-12);
-    }
-
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getActiveSheet();
+    var sheet = ss.getSheetByName("Trang tính1") || ss.getActiveSheet();
     var lastRow = sheet.getLastRow();
 
     if (lastRow < 6) {
@@ -40,39 +32,41 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Đọc cột C (CCCD) từ dòng 6 đến hết
-    var cccdValues = sheet.getRange(6, 3, lastRow - 5, 1).getValues();
+    // Đọc Cột B (MS) và Cột C (Họ tên) từ dòng 6 đến hết
+    var numRows = lastRow - 5;
+    var rangeData = sheet.getRange(6, 2, numRows, 2).getValues();
     var targetRow = -1;
 
-    for (var i = 0; i < cccdValues.length; i++) {
-      var cellVal = String(cccdValues[i][0] || "").trim();
-      if (cellVal.length < 12 && cellVal.length > 0) {
-        cellVal = ("000000000000" + cellVal).slice(-12);
-      }
-      if (cellVal === cccd) {
-        targetRow = i + 6; // Dòng thực tế trong Google Sheets
+    for (var i = 0; i < rangeData.length; i++) {
+      var rowMs = String(rangeData[i][0] || "").trim().toUpperCase();
+      var rowName = String(rangeData[i][1] || "").trim().toLowerCase();
+
+      // Ưu tiên khớp theo Mã số (B001, B002...) hoặc theo Họ tên
+      if ((ms && rowMs === ms) || (hoTen && rowName === hoTen)) {
+        targetRow = i + 6;
         break;
       }
     }
 
     if (targetRow !== -1) {
-      // Cột 5 (E): Xác nhận về thông tin
-      sheet.getRange(targetRow, 5).setValue(status);
-      
-      // Cột 6 (F): Ghi chú
-      sheet.getRange(targetRow, 6).setValue(note);
+      // Cột 4 (D): Xác nhận về thông tin
+      sheet.getRange(targetRow, 4).setValue(status);
+
+      // Cột 5 (E): Ghi chú
+      sheet.getRange(targetRow, 5).setValue(note);
 
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
-        message: "Đã cập nhật dòng " + targetRow + " thành công!",
+        message: "Cập nhật thành công vào dòng " + targetRow,
         row: targetRow,
+        ms: ms,
         status: status,
         note: note
       })).setMimeType(ContentService.MimeType.JSON);
     } else {
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
-        message: "Không tìm thấy giáo viên có số CCCD: " + cccd
+        message: "Không tìm thấy nhân sự có MS: " + ms + " hoặc Tên: " + data.ho_ten
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -87,6 +81,7 @@ function doPost(e) {
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: "online",
-    service: "GDNN-GDTX Gò Vấp - Bộ đồng bộ xác nhận lương Google Sheets"
+    sheet: "Trang tính1",
+    description: "Webhook đồng bộ xác nhận lương GDNN-GDTX Gò Vấp"
   })).setMimeType(ContentService.MimeType.JSON);
 }
