@@ -39,10 +39,10 @@ function doPost(e) {
 
     for (var i = 0; i < rangeData.length; i++) {
       var rowMs = String(rangeData[i][0] || "").trim().toUpperCase();
-      var rowName = String(rangeData[i][1] || "").trim().toLowerCase();
 
-      // Ưu tiên khớp theo Mã số (B001, B002...) hoặc theo Họ tên
-      if ((ms && rowMs === ms) || (hoTen && rowName === hoTen)) {
+      // KHỚP CHÍNH XÁC TUYỆT ĐỐI THEO MÃ SỐ (Cột B: B001, B002, ...)
+      // Đảm bảo dù 2 giáo viên trùng họ tên 100% vẫn cập nhật đúng dòng của từng người
+      if (ms && rowMs === ms) {
         targetRow = i + 6;
         break;
       }
