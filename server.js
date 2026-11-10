@@ -309,6 +309,41 @@ app.post('/api/confirm', (req, res) => {
 
   console.log(`[CONFIRM] ${teacher.ho_ten} (${teacher.ms}) đã xác nhận: "${status}" lúc ${timeStr}`);
 
+  // Tự động đồng bộ thẳng vào Google Sheet gốc qua Webhook (nếu được cấu hình)
+  let webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+  try {
+    const configPath = path.join(__dirname, 'config.json');
+    if (fs.existsSync(configPath)) {
+      const cfg = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      if (cfg.google_sheet_webhook_url) {
+        webhookUrl = cfg.google_sheet_webhook_url;
+      }
+    }
+  } catch (err) {
+    // ignore
+  }
+
+  if (webhookUrl && webhookUrl.startsWith('http')) {
+    fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        cccd: cleanCCCD,
+        status: status,
+        note: (note || '').trim(),
+        ho_ten: teacher.ho_ten,
+        ms: teacher.ms
+      })
+    })
+    .then(r => r.json())
+    .then(result => {
+      console.log(`[GOOGLE SHEETS SYNC] Kết quả đồng bộ cho ${teacher.ho_ten}:`, result);
+    })
+    .catch(err => {
+      console.error(`[GOOGLE SHEETS SYNC] Lỗi khi gửi sang Google Sheets:`, err.message);
+    });
+  }
+
   return res.json({
     success: true,
     message: 'Xác nhận thông tin thành công!',
@@ -316,20 +351,11 @@ app.post('/api/confirm', (req, res) => {
   });
 });
 
-// 5. API Xuất file Excel xác nhận tổng hợp
+// 5. Đã tắt chức năng xuất dữ liệu trên web để bảo vệ thông tin
 app.get('/api/confirmations/export', (req, res) => {
-  const scriptPath = path.join(__dirname, 'export_confirmations.py');
-  exec(`python "${scriptPath}"`, (err, stdout, stderr) => {
-    if (err) {
-      console.error('[EXPORT] Lỗi tạo file export:', err, stderr);
-      return res.status(500).json({ success: false, message: 'Không thể tạo file báo cáo.' });
-    }
-    const exportFile = path.join(__dirname, 'data', 'XAC_NHAN_LUONG_T10_2026.xlsx');
-    if (fs.existsSync(exportFile)) {
-      res.download(exportFile, 'XAC_NHAN_LUONG_T10_2026.xlsx');
-    } else {
-      res.status(500).json({ success: false, message: 'File export chưa được tạo.' });
-    }
+  return res.status(403).json({
+    success: false,
+    message: 'Chức năng xuất kết quả trên web đã bị vô hiệu hóa vì lý do an toàn thông tin.'
   });
 });
 
