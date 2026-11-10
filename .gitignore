@@ -1,0 +1,4 @@
+node_modules/
+.env
+temp_*.xlsx
+data/confirmations.json

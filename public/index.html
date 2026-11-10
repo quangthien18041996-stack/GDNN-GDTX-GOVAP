@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cổng Tra Cứu Thông Tin Lương - Trung tâm GDNN - GDTX Gò Vấp</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="main-header no-print">
+      <div class="header-inner">
+        <div class="national-motto">
+          <p class="motto-top">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+          <p class="motto-bottom">Độc lập - Tự do - Hạnh phúc</p>
+          <div class="motto-divider"></div>
+        </div>
+        <div class="portal-branding">
+          <div class="logo-box">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="branding-text">
+            <h1>CỔNG TRA CỨU LƯƠNG & PHỤ CẤP</h1>
+            <p>Hệ thống tra cứu bảo mật dành cho Cán bộ, Giáo viên và Nhân viên Trung tâm GDNN - GDTX Gò Vấp</p>
+          </div>
+        </div>
+        <div class="security-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Bảo mật dữ liệu cá nhân theo NĐ 13/2023/NĐ-CP • Tra cứu độc lập</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Search Card -->
+      <section class="card lookup-card no-print" id="searchSection">
+        <div class="card-header">
+          <div class="icon-circle">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <div>
+            <h2>Tra cứu thông tin cá nhân</h2>
+            <p class="text-muted">Nhập số Căn cước công dân (CCCD) để xem chi tiết phiếu lương của bạn</p>
+          </div>
+        </div>
+
+        <form id="lookupForm" class="lookup-form" autocomplete="off">
+          <div class="form-group">
+            <label for="cccdInput">
+              <i class="fa-solid fa-address-card"></i> Số Căn cước công dân (12 chữ số) <span class="required">*</span>
+            </label>
+            <div class="input-with-icon">
+              <input 
+                type="text" 
+                id="cccdInput" 
+                name="cccd" 
+                placeholder="Ví dụ: 079181005825" 
+                maxlength="12" 
+                inputmode="numeric" 
+                autocomplete="off" 
+                required 
+                autofocus
+              >
+              <button type="button" class="btn-clear-input" id="btnClearCccd" title="Xóa">
+                <i class="fa-solid fa-circle-xmark"></i>
+              </button>
+            </div>
+            <span class="field-hint"><i class="fa-solid fa-circle-info"></i> Hệ thống chỉ hiển thị đúng hồ sơ của số CCCD được nhập, không công khai danh sách chung.</span>
+          </div>
+
+          <!-- Captcha Box -->
+          <div class="form-group captcha-group">
+            <label for="captchaInput">
+              <i class="fa-solid fa-robot"></i> Xác nhận bảo mật (chống robot tự động) <span class="required">*</span>
+            </label>
+            <div class="captcha-row">
+              <div class="captcha-question-box" id="captchaQuestion">
+                <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+              </div>
+              <button type="button" class="btn-refresh-captcha" id="btnRefreshCaptcha" title="Đổi phép tính khác">
+                <i class="fa-solid fa-arrows-rotate"></i>
+              </button>
+              <div class="captcha-input-wrap">
+                <input 
+                  type="number" 
+                  id="captchaInput" 
+                  placeholder="Nhập kết quả" 
+                  required
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Alert message -->
+          <div id="alertMessage" class="alert-box d-none"></div>
+
+          <!-- Submit button -->
+          <button type="submit" class="btn-submit" id="btnSubmit">
+            <span class="btn-text"><i class="fa-solid fa-magnifying-glass"></i> Tra cứu thông tin</span>
+            <span class="btn-loading d-none"><i class="fa-solid fa-spinner fa-spin"></i> Đang xác thực...</span>
+          </button>
+        </form>
+
+        <div class="security-notes">
+          <div class="note-item">
+            <i class="fa-solid fa-lock"></i>
+            <span>Dữ liệu được xử lý tại máy chủ, không tải trước bất kỳ thông tin nào về trình duyệt.</span>
+          </div>
+          <div class="note-item">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>Không chia sẻ số CCCD của bạn cho người khác để tránh lộ thông tin thu nhập cá nhân.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Result Card -->
+      <section class="card result-card d-none" id="resultSection">
+        <!-- Auto timeout notification -->
+        <div class="timeout-bar no-print">
+          <div class="timeout-info">
+            <i class="fa-regular fa-clock"></i>
+            <span>Màn hình sẽ tự động khóa để bảo mật sau: <strong id="countdownText">120</strong>s</span>
+          </div>
+          <div class="timeout-actions">
+            <button class="btn-action-sm btn-print" id="btnPrint">
+              <i class="fa-solid fa-print"></i> In thông tin / PDF
+            </button>
+            <button class="btn-action-sm btn-close-view" id="btnCloseResult">
+              <i class="fa-solid fa-arrow-left"></i> Tra cứu người khác
+            </button>
+          </div>
+        </div>
+
+        <!-- Printable Slip Area -->
+        <div class="payslip-wrapper" id="printablePayslip">
+          <div class="payslip-title-block">
+            <h2 class="payslip-main-title">THÔNG TIN LƯƠNG VÀ PHỤ CẤP</h2>
+            <p class="payslip-period" id="displayPeriod">Kỳ chi trả: Tháng 10/2026</p>
+          </div>
+
+          <!-- Staff Information Box -->
+          <div class="info-section">
+            <h3 class="section-title"><i class="fa-solid fa-user-check no-print"></i> 1. Thông tin cán bộ, giáo viên</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Họ và tên:</span>
+                <span class="info-value highlight-name" id="valHoTen">---</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Mã nhân sự:</span>
+                <span class="info-value badge-ms" id="valMs">---</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Số CCCD:</span>
+                <span class="info-value" id="valCccd">---</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Chức vụ:</span>
+                <span class="info-value" id="valChucVu">---</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Mã ngạch:</span>
+                <span class="info-value" id="valMaNgach">---</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Số tài khoản:</span>
+                <span class="info-value font-mono">
+                  <span id="valSoTk">---</span>
+                  <button type="button" class="btn-toggle-eye no-print" id="btnToggleBank" title="Ẩn/Hiện đầy đủ số tài khoản">
+                    <i class="fa-regular fa-eye-slash" id="eyeIcon"></i>
+                  </button>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Coefficients Table -->
+          <div class="coefficients-section">
+            <h3 class="section-title"><i class="fa-solid fa-calculator no-print"></i> 2. Hệ số lương & phụ cấp</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Hệ số lương (HSL)</th>
+                    <th>Phụ cấp chức vụ (PCCV)</th>
+                    <th>Thâm niên vượt khung (TNVK)</th>
+                    <th>Ưu đãi nghề GV (UDGV)</th>
+                    <th>Thâm niên nghề (TNNG)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td id="valHsl" class="text-center font-bold">0.0</td>
+                    <td id="valPccv" class="text-center">0.0</td>
+                    <td id="valTnvk" class="text-center">0%</td>
+                    <td id="valUdgv" class="text-center">0%</td>
+                    <td id="valTnng" class="text-center">0%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Section 3: Confirmation Form -->
+          <div class="confirmation-section no-print">
+            <h3 class="section-title"><i class="fa-solid fa-clipboard-check"></i> 3. Xác nhận thông tin lương</h3>
+            
+            <!-- Confirmed Alert State -->
+            <div id="confirmedAlert" class="confirmed-status-box d-none">
+              <div class="status-icon" id="statusIconWrap">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div class="status-content">
+                <h4 id="confirmedStatusTitle">Bạn đã gửi xác nhận thành công</h4>
+                <p id="confirmedStatusDesc">Trạng thái: <strong>Đúng thông tin</strong></p>
+                <div class="confirmed-time" id="confirmedTime">Thời gian xác nhận: ---</div>
+                <div id="confirmedNoteWrap" class="confirmed-note d-none">
+                  <em>Ghi chú:</em> <span id="confirmedNoteText"></span>
+                </div>
+                <button type="button" class="btn-reconfirm" id="btnReconfirm">
+                  <i class="fa-solid fa-pen-to-square"></i> Cập nhật / Điều chỉnh phản hồi
+                </button>
+              </div>
+            </div>
+
+            <!-- Confirmation Form -->
+            <form id="confirmForm" class="confirm-form">
+              <p class="confirm-intro">
+                Sau khi kiểm tra các thông tin ở trên, vui lòng chọn xác nhận để kế toán ghi nhận vào danh sách:
+              </p>
+
+              <div class="confirm-options">
+                <label class="confirm-option-card option-correct">
+                  <input type="radio" name="confirmStatus" value="Đúng thông tin" checked>
+                  <div class="option-content">
+                    <div class="option-title"><i class="fa-solid fa-circle-check"></i> Đúng thông tin</div>
+                    <div class="option-desc">Các hệ số lương và tỷ lệ phụ cấp của tôi hoàn toàn chính xác.</div>
+                  </div>
+                </label>
+
+                <label class="confirm-option-card option-incorrect">
+                  <input type="radio" name="confirmStatus" value="Chưa đúng thông tin">
+                  <div class="option-content">
+                    <div class="option-title"><i class="fa-solid fa-triangle-exclamation"></i> Chưa đúng thông tin</div>
+                    <div class="option-desc">Số liệu chưa chính xác, tôi có ý kiến/thắc mắc cần kiểm tra lại.</div>
+                  </div>
+                </label>
+              </div>
+
+              <div class="form-group note-group" id="noteGroup">
+                <label for="confirmNote">
+                  <i class="fa-regular fa-comment-dots"></i> Ghi chú / Ý kiến phản hồi (nếu có sai sót):
+                </label>
+                <textarea 
+                  id="confirmNote" 
+                  rows="2" 
+                  placeholder="Nhập nội dung thắc mắc hoặc thông tin cần điều chỉnh (ví dụ: HSL của tôi tháng này là...)"
+                ></textarea>
+              </div>
+
+              <div id="confirmAlertMsg" class="alert-box d-none"></div>
+
+              <div class="confirm-submit-row">
+                <button type="submit" class="btn-confirm-submit" id="btnConfirmSubmit">
+                  <span class="btn-confirm-text"><i class="fa-solid fa-check"></i> Gửi xác nhận</span>
+                  <span class="btn-confirm-loading d-none"><i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="bottom-actions no-print">
+          <button class="btn-print-large" id="btnPrint2">
+            <i class="fa-solid fa-print"></i> In thông tin / Lưu PDF
+          </button>
+          <button class="btn-clear-large" id="btnCloseResult2">
+            <i class="fa-solid fa-lock"></i> Xóa dữ liệu màn hình & Thoát
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer no-print">
+      <div class="footer-inner">
+        <p>© 2026 Hệ thống Cổng Thông Tin Tra Cứu Lương Giáo Viên. Dữ liệu được bảo mật nhiều lớp.</p>
+        <p class="footer-sub">Hệ thống phân phối tải đồng thời, đảm bảo an toàn tuyệt đối thông tin cá nhân.</p>
+        <div class="footer-admin-links">
+          <a href="/api/confirmations/export" class="admin-link" title="Tải file Excel tổng hợp tình hình xác nhận">
+            <i class="fa-solid fa-file-excel"></i> Xuất kết quả xác nhận (Excel)
+          </a>
+          <span class="link-sep">•</span>
+          <a href="https://docs.google.com/spreadsheets/d/1z0ImZCT3GG6pYHN3NCzTq5kD4LyEXpZY/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="admin-link" title="Mở bảng xác nhận trực tuyến trên Google Sheets">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở Google Sheets gốc
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
