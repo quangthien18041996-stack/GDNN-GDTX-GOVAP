@@ -272,7 +272,7 @@ app.post('/api/lookup', (req, res) => {
 });
 
 // 4. API Xác nhận thông tin lương
-app.post('/api/confirm', (req, res) => {
+app.post('/api/confirm', async (req, res) => {
   const { cccd, status, note } = req.body;
 
   if (!cccd || typeof cccd !== 'string') {
@@ -310,7 +310,7 @@ app.post('/api/confirm', (req, res) => {
   console.log(`[CONFIRM] ${teacher.ho_ten} (${teacher.ms}) đã xác nhận: "${status}" lúc ${timeStr}`);
 
   // Tự động đồng bộ thẳng vào Google Sheet gốc qua Webhook (nếu được cấu hình)
-  let webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL;
+  let webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxmmYS7llVHbG2IFfMxhPUeNfUmeuhWKl3EC2aqFomzg5PfqQ5u940eiE7YfEu2jh3g/exec';
   try {
     const configPath = path.join(__dirname, 'config.json');
     if (fs.existsSync(configPath)) {
@@ -323,31 +323,34 @@ app.post('/api/confirm', (req, res) => {
     // ignore
   }
 
+  let sheetSyncSuccess = false;
   if (webhookUrl && webhookUrl.startsWith('http')) {
-    fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        cccd: cleanCCCD,
-        status: status,
-        note: (note || '').trim(),
-        ho_ten: teacher.ho_ten,
-        ms: teacher.ms
-      })
-    })
-    .then(r => r.json())
-    .then(result => {
+    try {
+      const sheetResponse = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        redirect: 'follow',
+        body: JSON.stringify({
+          cccd: cleanCCCD,
+          status: status,
+          note: (note || '').trim(),
+          ho_ten: teacher.ho_ten,
+          ms: teacher.ms
+        })
+      });
+      const result = await sheetResponse.json().catch(() => null);
+      sheetSyncSuccess = !!(result && result.success);
       console.log(`[GOOGLE SHEETS SYNC] Kết quả đồng bộ cho ${teacher.ho_ten}:`, result);
-    })
-    .catch(err => {
+    } catch (err) {
       console.error(`[GOOGLE SHEETS SYNC] Lỗi khi gửi sang Google Sheets:`, err.message);
-    });
+    }
   }
 
   return res.json({
     success: true,
     message: 'Xác nhận thông tin thành công!',
-    confirmation: confirmRecord
+    confirmation: confirmRecord,
+    sheetSync: sheetSyncSuccess
   });
 });
 
