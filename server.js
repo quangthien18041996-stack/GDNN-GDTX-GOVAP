@@ -359,11 +359,15 @@ app.get('/api/confirmations/export', (req, res) => {
   });
 });
 
-// Khởi chạy server
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`====================================================`);
-  console.log(`[CỔNG TRA CỨU LƯƠNG GIÁO VIÊN] Đang chạy tại:`);
-  console.log(`  - Local:    http://localhost:${PORT}`);
-  console.log(`  - Mạng LAN: http://0.0.0.0:${PORT}`);
-  console.log(`====================================================`);
-});
+// Khởi chạy server nếu chạy trực tiếp
+if (require.main === module || !process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`====================================================`);
+    console.log(`[CỔNG TRA CỨU LƯƠNG GIÁO VIÊN] Đang chạy tại:`);
+    console.log(`  - Local:    http://localhost:${PORT}`);
+    console.log(`  - Mạng LAN: http://0.0.0.0:${PORT}`);
+    console.log(`====================================================`);
+  });
+}
+
+module.exports = app;
