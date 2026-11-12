@@ -313,7 +313,7 @@ app.post('/api/confirm', async (req, res) => {
   console.log(`[CONFIRM] ${teacher.ho_ten} (${cleanCCCD}) đã xác nhận: "${status}" lúc ${timeStr}`);
 
   // Tự động đồng bộ thẳng vào Google Sheet gốc qua Webhook (nếu được cấu hình)
-  let webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxmmYS7llVHbG2IFfMxhPUeNfUmeuhWKl3EC2aqFomzg5PfqQ5u940eiE7YfEu2jh3g/exec';
+  let webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbzVF4UmUM_c8o6FmOndH2exnI61ndFcRYIUkt7yeq1b275jeo7aTXTAbbqX8ANZ02yk/exec';
   try {
     const configPath = path.join(__dirname, 'config.json');
     if (fs.existsSync(configPath)) {
