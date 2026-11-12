@@ -2,4 +2,6 @@ node_modules/
 .env
 temp_*.xlsx
 data/confirmations.json
+data/confirmations_salary.json
 cloudflared.exe
+.vercel

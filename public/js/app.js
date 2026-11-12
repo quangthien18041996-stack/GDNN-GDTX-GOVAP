@@ -179,22 +179,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Định dạng số tiền VNĐ (làm tròn số nguyên, phân cách hàng nghìn)
+  function formatVnd(val) {
+    if (val === null || val === undefined || val === '') return '0';
+    const num = Math.round(Number(val));
+    if (isNaN(num)) return '0';
+    return num.toLocaleString('vi-VN');
+  }
+
   // 3. Hiển thị thông tin lên giao diện
   function displayResult(data) {
-    isBankMasked = true;
-    updateBankDisplay();
+    const elHoTen = document.getElementById('valHoTen');
+    if (elHoTen) elHoTen.textContent = data.ho_ten || '---';
 
-    valHoTen.textContent = data.ho_ten || '---';
-    valMs.textContent = data.ms || '---';
-    valCccd.textContent = data.cccd_full || '---';
-    valChucVu.textContent = data.chuc_vu || '---';
-    valMaNgach.textContent = data.ma_ngach || '---';
+    const elLuongChinh = document.getElementById('valLuongChinh');
+    if (elLuongChinh) elLuongChinh.textContent = formatVnd(data.luong_chinh);
 
-    valHsl.textContent = Number(data.hsl).toFixed(2);
-    valPccv.textContent = Number(data.pccv).toFixed(2);
-    valTnvk.textContent = formatPercent(data.tnvk);
-    valUdgv.textContent = formatPercent(data.udgv);
-    valTnng.textContent = formatPercent(data.tnng);
+    const elPcUuDai = document.getElementById('valPcUuDai');
+    if (elPcUuDai) elPcUuDai.textContent = formatVnd(data.pc_uudai);
+
+    const elThamNien = document.getElementById('valThamNien');
+    if (elThamNien) elThamNien.textContent = formatVnd(data.tham_nien);
+
+    const elPcTrachNhiem = document.getElementById('valPcTrachNhiem');
+    if (elPcTrachNhiem) elPcTrachNhiem.textContent = formatVnd(data.pc_trach_nhiem);
+
+    const elHsNq27 = document.getElementById('valHsNq27');
+    if (elHsNq27) elHsNq27.textContent = (data.hs_nq27 !== undefined && data.hs_nq27 !== null) ? Number(data.hs_nq27).toString() : '1.5';
+
+    const elNq27Q3 = document.getElementById('valNq27Q3');
+    if (elNq27Q3) elNq27Q3.textContent = formatVnd(data.nq27_q3);
+
+    const elTongThuNhap = document.getElementById('valTongThuNhap');
+    if (elTongThuNhap) elTongThuNhap.textContent = formatVnd(data.tong_thu_nhap);
+
+    const elTamUng = document.getElementById('valTamUng');
+    if (elTamUng) elTamUng.textContent = formatVnd(data.tam_ung || 0);
+
+    const elBaoHiem = document.getElementById('valBaoHiem');
+    if (elBaoHiem) elBaoHiem.textContent = formatVnd(data.bao_hiem);
+
+    const elTruyThu = document.getElementById('valTruyThu');
+    if (elTruyThu) elTruyThu.textContent = formatVnd(data.truy_thu);
+
+    const elPhuThuoc = document.getElementById('valPhuThuoc');
+    if (elPhuThuoc) {
+      elPhuThuoc.textContent = (data.phu_thuoc !== null && data.phu_thuoc !== undefined && data.phu_thuoc !== '') ? data.phu_thuoc : '-';
+    }
+
+    const elThueTncn = document.getElementById('valThueTncn');
+    if (elThueTncn) elThueTncn.textContent = formatVnd(data.thue_tncn);
+
+    const elTongKhauTru = document.getElementById('valTongKhauTru');
+    if (elTongKhauTru) elTongKhauTru.textContent = formatVnd(data.tong_khau_tru);
+
+    const elThucLinh = document.getElementById('valThucLinh');
+    if (elThucLinh) elThucLinh.textContent = formatVnd(data.thuc_linh);
+
+    const elPeriod = document.getElementById('displayPeriod');
+    if (elPeriod && data.period) elPeriod.textContent = data.period;
 
     // Xử lý hiển thị khối xác nhận
     renderConfirmationUI(data.confirmation);
@@ -317,24 +360,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Ẩn / Hiện số tài khoản ngân hàng
+  // Ẩn / Hiện số tài khoản ngân hàng (nếu có trường này)
   function updateBankDisplay() {
-    if (!currentRecord) return;
+    if (!currentRecord || !valSoTk) return;
     if (isBankMasked) {
       valSoTk.textContent = currentRecord.so_tk_masked || '---';
-      eyeIcon.className = 'fa-regular fa-eye-slash';
-      btnToggleBank.title = 'Bấm để xem đầy đủ số tài khoản';
+      if (eyeIcon) eyeIcon.className = 'fa-regular fa-eye-slash';
+      if (btnToggleBank) btnToggleBank.title = 'Bấm để xem đầy đủ số tài khoản';
     } else {
       valSoTk.textContent = currentRecord.so_tk || '---';
-      eyeIcon.className = 'fa-regular fa-eye';
-      btnToggleBank.title = 'Bấm để ẩn số tài khoản';
+      if (eyeIcon) eyeIcon.className = 'fa-regular fa-eye';
+      if (btnToggleBank) btnToggleBank.title = 'Bấm để ẩn số tài khoản';
     }
   }
 
-  btnToggleBank.addEventListener('click', () => {
-    isBankMasked = !isBankMasked;
-    updateBankDisplay();
-  });
+  if (btnToggleBank) {
+    btnToggleBank.addEventListener('click', () => {
+      isBankMasked = !isBankMasked;
+      updateBankDisplay();
+    });
+  }
 
   // 4. Cơ chế tự động khóa màn hình sau 120s không tương tác
   function startAutoTimeout() {

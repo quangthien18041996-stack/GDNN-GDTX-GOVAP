@@ -1126,6 +1126,29 @@ body {
     margin-top: 60px !important;
     page-break-inside: avoid;
   }
+
+  .slip-table-container {
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .official-slip-table {
+    border: 1.5px solid #000 !important;
+  }
+
+  .official-slip-table td {
+    border: 1px solid #000 !important;
+    color: #000 !important;
+    padding: 7px 10px !important;
+  }
+
+  .official-slip-table .col-group,
+  .official-slip-table .col-head,
+  .official-slip-table .row-subtotal td,
+  .official-slip-table .row-grand-total td {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }
 
 /* Responsive */
@@ -1165,4 +1188,179 @@ body {
     width: 100%;
     justify-content: center;
   }
+
+  .slip-doc-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .slip-header-right {
+    text-align: center;
+  }
+
+  .official-slip-table {
+    font-size: 0.85rem;
+  }
+
+  .official-slip-table td {
+    padding: 8px 10px;
+  }
+}
+
+/* =========================================================
+   OFFICIAL SALARY SLIP STYLES (MẪU PHIẾU LƯƠNG NHÂN VIÊN)
+   ========================================================= */
+.slip-doc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #0f3d64;
+}
+
+.slip-header-left {
+  text-align: left;
+}
+
+.slip-school-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f3d64;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.slip-line-sub {
+  width: 90px;
+  height: 2px;
+  background-color: #d97706;
+}
+
+.slip-header-right {
+  text-align: right;
+}
+
+.slip-doc-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f3d64;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.slip-doc-period {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.slip-doc-unit {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #64748b;
+}
+
+.slip-table-container {
+  overflow-x: auto;
+  margin-bottom: 28px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.official-slip-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border: 1.5px solid #334155;
+  font-size: 0.95rem;
+}
+
+.official-slip-table td {
+  border: 1px solid #64748b;
+  padding: 10px 14px;
+  vertical-align: middle;
+}
+
+.official-slip-table .col-head {
+  background-color: #f8fafc;
+  color: #0f3d64;
+  font-weight: 700;
+}
+
+.official-slip-table .col-group {
+  background-color: #f1f5f9;
+  color: #0f3d64;
+  font-weight: 700;
+  text-align: center;
+  width: 25%;
+  letter-spacing: 0.2px;
+  border-right: 1.5px solid #334155;
+}
+
+.official-slip-table .col-label {
+  color: #1e293b;
+  width: 45%;
+}
+
+.official-slip-table .col-val {
+  color: #0f172a;
+  width: 30%;
+  font-size: 1rem;
+}
+
+.official-slip-table .name-cell {
+  font-size: 1.1rem;
+  color: #0f3d64;
+  text-transform: uppercase;
+}
+
+.official-slip-table .row-subtotal {
+  background-color: #f8fafc;
+}
+
+.official-slip-table .row-subtotal td {
+  border-top: 1.5px solid #475569;
+  border-bottom: 1.5px solid #475569;
+}
+
+.official-slip-table .row-highlight {
+  background-color: #fefce8;
+}
+
+.official-slip-table .row-highlight td {
+  border-top: 1.5px solid #475569;
+  border-bottom: 1.5px solid #475569;
+}
+
+.official-slip-table .row-grand-total {
+  background-color: #eff6ff;
+}
+
+.official-slip-table .row-grand-total td {
+  border-top: 2px solid #0f3d64;
+  border-bottom: 2px solid #0f3d64;
+  padding: 14px 14px;
+}
+
+.text-success {
+  color: #15803d !important;
+}
+
+.text-danger {
+  color: #b91c1c !important;
+}
+
+.text-primary {
+  color: #0f3d64 !important;
+}
+
+.text-lg {
+  font-size: 1.15rem !important;
 }

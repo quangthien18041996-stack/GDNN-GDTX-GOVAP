@@ -6,8 +6,9 @@ const { exec } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DATA_PATH = path.join(__dirname, 'data', 'teachers.json');
-const CONFIRM_PATH = path.join(__dirname, 'data', 'confirmations.json');
+const SALARY_DATA_PATH = path.join(__dirname, 'data', 'salary_teachers.json');
+const DATA_PATH = fs.existsSync(SALARY_DATA_PATH) ? SALARY_DATA_PATH : path.join(__dirname, 'data', 'teachers.json');
+const CONFIRM_PATH = path.join(__dirname, 'data', 'confirmations_salary.json');
 const BASE_SALARY = 2340000; // Mức lương cơ sở hiện hành theo NĐ 73/2024/NĐ-CP
 
 // Middleware
@@ -243,29 +244,31 @@ app.post('/api/lookup', (req, res) => {
   ipData.lastAttempt = now;
   ipRateMap.set(clientIp, ipData);
 
-  const breakdown = calculateSalaryBreakdown(record);
   const confirmation = confirmationsMap.get(cleanCCCD) || null;
 
-  // Chỉ trả về DUY NHẤT dữ liệu của người này, tuyệt đối không gửi thêm dữ liệu khác
+  // Trả về DUY NHẤT dữ liệu phiếu lương của nhân sự này
   return res.json({
     success: true,
     data: {
       stt: record.stt,
-      ms: record.ms,
       ho_ten: record.ho_ten,
       cccd_masked: maskString(record.cccd, 4, 3),
       cccd_full: record.cccd,
-      chuc_vu: record.chuc_vu,
-      ma_ngach: record.ma_ngach,
-      hsl: record.hsl,
-      pccv: record.pccv,
-      tnvk: record.tnvk,
-      udgv: record.udgv,
-      tnng: record.tnng,
-      so_tk: record.so_tk,
-      so_tk_masked: maskString(record.so_tk, 4, 4),
-      salary: breakdown,
-      period: 'Tháng 10/2026',
+      luong_chinh: record.luong_chinh !== undefined ? record.luong_chinh : 0,
+      pc_uudai: record.pc_uudai !== undefined ? record.pc_uudai : 0,
+      tham_nien: record.tham_nien !== undefined ? record.tham_nien : 0,
+      pc_trach_nhiem: record.pc_trach_nhiem !== undefined ? record.pc_trach_nhiem : 0,
+      hs_nq27: record.hs_nq27 !== undefined ? record.hs_nq27 : 1.5,
+      nq27_q3: record.nq27_q3 !== undefined ? record.nq27_q3 : 0,
+      tong_thu_nhap: record.tong_thu_nhap !== undefined ? record.tong_thu_nhap : 0,
+      tam_ung: record.tam_ung !== undefined ? record.tam_ung : 0,
+      bao_hiem: record.bao_hiem !== undefined ? record.bao_hiem : 0,
+      truy_thu: record.truy_thu !== undefined ? record.truy_thu : 0,
+      phu_thuoc: record.phu_thuoc || '',
+      thue_tncn: record.thue_tncn !== undefined ? record.thue_tncn : 0,
+      tong_khau_tru: record.tong_khau_tru !== undefined ? record.tong_khau_tru : 0,
+      thuc_linh: record.thuc_linh !== undefined ? record.thuc_linh : 0,
+      period: 'THÁNG 10, 11, Q3 NĂM 2026',
       confirmation: confirmation
     }
   });
@@ -307,7 +310,7 @@ app.post('/api/confirm', async (req, res) => {
   confirmationsMap.set(cleanCCCD, confirmRecord);
   saveConfirmationsToFile();
 
-  console.log(`[CONFIRM] ${teacher.ho_ten} (${teacher.ms}) đã xác nhận: "${status}" lúc ${timeStr}`);
+  console.log(`[CONFIRM] ${teacher.ho_ten} (${cleanCCCD}) đã xác nhận: "${status}" lúc ${timeStr}`);
 
   // Tự động đồng bộ thẳng vào Google Sheet gốc qua Webhook (nếu được cấu hình)
   let webhookUrl = process.env.GOOGLE_SHEET_WEBHOOK_URL || 'https://script.google.com/macros/s/AKfycbxmmYS7llVHbG2IFfMxhPUeNfUmeuhWKl3EC2aqFomzg5PfqQ5u940eiE7YfEu2jh3g/exec';
@@ -335,7 +338,8 @@ app.post('/api/confirm', async (req, res) => {
           status: status,
           note: (note || '').trim(),
           ho_ten: teacher.ho_ten,
-          ms: teacher.ms
+          ms: teacher.ms || cleanCCCD,
+          stt: teacher.stt
         })
       });
       const result = await sheetResponse.json().catch(() => null);

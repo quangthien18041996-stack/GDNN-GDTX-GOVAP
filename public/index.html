@@ -24,7 +24,7 @@
             <div class="header-icon-wrap">
               <i class="fa-solid fa-graduation-cap"></i>
             </div>
-            <h1>CỔNG TRA CỨU HỆ SỐ LƯƠNG VÀ PHỤ CẤP</h1>
+            <h1>CỔNG TRA CỨU PHIẾU LƯƠNG NHÂN VIÊN</h1>
           </div>
           <p class="header-subtext">Thông tin cá nhân của Cán bộ, Giáo viên và Nhân viên được bảo mật</p>
         </div>
@@ -40,8 +40,8 @@
             <i class="fa-solid fa-id-card"></i>
           </div>
           <div>
-            <h2>Tra cứu thông tin cá nhân</h2>
-            <p class="text-muted">Nhập số CCCD để xác nhận hệ số lương và phụ cấp của cá nhân</p>
+            <h2>Tra cứu phiếu lương cá nhân</h2>
+            <p class="text-muted">Nhập số CCCD để xem chi tiết và xác nhận phiếu lương</p>
           </div>
         </div>
 
@@ -134,77 +134,101 @@
 
         <!-- Printable Slip Area -->
         <div class="payslip-wrapper" id="printablePayslip">
-          <div class="payslip-title-block">
-            <h2 class="payslip-main-title">THÔNG TIN LƯƠNG VÀ PHỤ CẤP</h2>
-            <p class="payslip-period" id="displayPeriod">Kỳ chi trả: Tháng 10/2026</p>
-          </div>
-
-          <!-- Staff Information Box -->
-          <div class="info-section">
-            <h3 class="section-title"><i class="fa-solid fa-user-check no-print"></i> 1. Thông tin cán bộ, giáo viên</h3>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Họ và tên:</span>
-                <span class="info-value highlight-name" id="valHoTen">---</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Mã nhân sự:</span>
-                <span class="info-value badge-ms" id="valMs">---</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Số CCCD:</span>
-                <span class="info-value" id="valCccd">---</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Chức vụ:</span>
-                <span class="info-value" id="valChucVu">---</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Mã ngạch:</span>
-                <span class="info-value" id="valMaNgach">---</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Số tài khoản:</span>
-                <span class="info-value font-mono">
-                  <span id="valSoTk">---</span>
-                  <button type="button" class="btn-toggle-eye no-print" id="btnToggleBank" title="Ẩn/Hiện đầy đủ số tài khoản">
-                    <i class="fa-regular fa-eye-slash" id="eyeIcon"></i>
-                  </button>
-                </span>
-              </div>
+          <!-- Slip Document Header -->
+          <div class="slip-doc-header">
+            <div class="slip-header-left">
+              <h3 class="slip-school-name">TRUNG TÂM GDNN – GDTX GÒ VẤP</h3>
+              <div class="slip-line-sub"></div>
+            </div>
+            <div class="slip-header-right">
+              <h2 class="slip-doc-title">PHIẾU LƯƠNG NHÂN VIÊN</h2>
+              <p class="slip-doc-period" id="displayPeriod">THÁNG 10, 11, Q3 NĂM 2026</p>
+              <p class="slip-doc-unit">Đơn vị tính: VNĐ</p>
             </div>
           </div>
 
-          <!-- Section 2: Coefficients Table -->
-          <div class="coefficients-section">
-            <h3 class="section-title"><i class="fa-solid fa-calculator no-print"></i> 2. Hệ số lương & phụ cấp</h3>
-            <div class="table-responsive">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Hệ số lương (HSL)</th>
-                    <th>Phụ cấp chức vụ (PCCV)</th>
-                    <th>Thâm niên vượt khung (TNVK)</th>
-                    <th>Ưu đãi nghề GV (UDGV)</th>
-                    <th>Thâm niên nghề (TNNG)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td id="valHsl" class="text-center font-bold">0.0</td>
-                    <td id="valPccv" class="text-center">0.0</td>
-                    <td id="valTnvk" class="text-center">0%</td>
-                    <td id="valUdgv" class="text-center">0%</td>
-                    <td id="valTnng" class="text-center">0%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          <!-- Official Salary Slip Table -->
+          <div class="slip-table-container">
+            <table class="official-slip-table">
+              <tbody>
+                <!-- Họ và tên -->
+                <tr class="row-employee">
+                  <td class="col-head font-bold" colspan="2">Họ và tên</td>
+                  <td class="col-val font-bold text-primary name-cell" id="valHoTen">---</td>
+                </tr>
+
+                <!-- Nhóm 1: Tổng tiền lương -->
+                <tr>
+                  <td class="col-group font-bold" rowspan="7">Tổng tiền lương</td>
+                  <td class="col-label">Lương (hệ số, chức vụ, vượt khung)</td>
+                  <td class="col-val text-right font-mono" id="valLuongChinh">0</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Phụ cấp ưu đãi</td>
+                  <td class="col-val text-right font-mono" id="valPcUuDai">0</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Thâm niên nhà giáo</td>
+                  <td class="col-val text-right font-mono" id="valThamNien">0</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Phụ cấp trách nhiệm</td>
+                  <td class="col-val text-right font-mono" id="valPcTrachNhiem">0</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Hệ số quy đổi NQ27</td>
+                  <td class="col-val text-right font-mono" id="valHsNq27">1.5</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Nghị Quyết 27 Quý 3</td>
+                  <td class="col-val text-right font-mono" id="valNq27Q3">0</td>
+                </tr>
+                <tr class="row-subtotal">
+                  <td class="col-label font-bold">Tổng thu nhập</td>
+                  <td class="col-val text-right font-bold font-mono text-success" id="valTongThuNhap">0</td>
+                </tr>
+
+                <!-- Tạm ứng lương -->
+                <tr class="row-highlight">
+                  <td class="col-head font-bold" colspan="2">Tạm ứng lương</td>
+                  <td class="col-val text-right font-bold font-mono" id="valTamUng">0</td>
+                </tr>
+
+                <!-- Nhóm 2: Các khoản phải khấu trừ -->
+                <tr>
+                  <td class="col-group font-bold" rowspan="5">Các khoản phải khấu trừ vào lương</td>
+                  <td class="col-label">Bảo hiểm</td>
+                  <td class="col-val text-right font-mono" id="valBaoHiem">0</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Truy thu</td>
+                  <td class="col-val text-right font-mono" id="valTruyThu">0</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Số người phụ thuộc đăng ký</td>
+                  <td class="col-val text-right font-mono" id="valPhuThuoc">-</td>
+                </tr>
+                <tr>
+                  <td class="col-label">Thuế TNCN</td>
+                  <td class="col-val text-right font-mono" id="valThueTncn">0</td>
+                </tr>
+                <tr class="row-subtotal">
+                  <td class="col-label font-bold">Tổng</td>
+                  <td class="col-val text-right font-bold font-mono text-danger" id="valTongKhauTru">0</td>
+                </tr>
+
+                <!-- Thực lĩnh -->
+                <tr class="row-grand-total">
+                  <td class="col-head font-bold text-lg" colspan="2">Thực lĩnh</td>
+                  <td class="col-val text-right font-bold text-lg font-mono text-primary" id="valThucLinh">0</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
 
           <!-- Section 3: Confirmation Form -->
           <div class="confirmation-section no-print">
-            <h3 class="section-title"><i class="fa-solid fa-clipboard-check"></i> 3. Xác nhận thông tin lương</h3>
+            <h3 class="section-title"><i class="fa-solid fa-clipboard-check"></i> Xác nhận thông tin phiếu lương</h3>
             
             <!-- Confirmed Alert State -->
             <div id="confirmedAlert" class="confirmed-status-box d-none">
