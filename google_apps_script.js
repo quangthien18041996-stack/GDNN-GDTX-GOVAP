@@ -1,14 +1,16 @@
 /**
- * GOOGLE APPS SCRIPT - ĐỒNG BỘ DỮ LIỆU XÁC NHẬN LƯƠNG
+ * GOOGLE APPS SCRIPT - ĐỒNG BỘ XÁC NHẬN PHIẾU LƯƠNG
  * Áp dụng cho bảng tính:
- * https://docs.google.com/spreadsheets/d/1o6rm3jQDDXxYWZ9c_Ff7TVMcz-ULHocDu6pzsANYjYE/edit
+ * https://docs.google.com/spreadsheets/d/1keYqupanW1_ThMGSHhQFrFzwQSEePGIUIfITD5rdjH0/edit
+ * Sheet: 'Trang tính1'
  * 
- * Cấu trúc cột của bảng tính này:
- * - Cột 1 (A): STT
- * - Cột 2 (B): MS (Mã số: B001, B002, ...)
- * - Cột 3 (C): Họ và tên (Hà Ngọc Minh Thi, Nguyễn Phạm Đại, ...)
- * - Cột 4 (D): Xác nhận về thông tin (Đúng thông tin / Chưa đúng thông tin)
- * - Cột 5 (E): Ghi chú (Ý kiến phản hồi)
+ * Cấu trúc cột:
+ * - Cột A (1): STT
+ * - Cột B (2): CCCD (12 chữ số)
+ * - Cột C (3): Họ và tên
+ * - Cột D (4): Xác nhận về thông tin (Đúng thông tin / Chưa đúng thông tin)
+ * - Cột E (5): Ghi chú
+ * - Cột F (6): Thời gian xác nhận
  */
 
 function doPost(e) {
@@ -16,57 +18,79 @@ function doPost(e) {
     var raw = e.postData.contents;
     var data = JSON.parse(raw);
     
-    var ms = String(data.ms || "").trim().toUpperCase();
+    var cccd = String(data.cccd || "").trim();
+    if (cccd.indexOf(".") > -1) { cccd = cccd.split(".")[0]; }
+    while (cccd.length < 12 && cccd.length > 0) { cccd = "0" + cccd; }
+    
     var hoTen = String(data.ho_ten || "").trim().toLowerCase();
     var status = String(data.status || "").trim();
     var note = String(data.note || "").trim();
+    var now = new Date();
+    var timeStr = Utilities.formatDate(now, "Asia/Ho_Chi_Minh", "HH:mm - dd/MM/yyyy");
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Trang tính1") || ss.getActiveSheet();
     var lastRow = sheet.getLastRow();
 
-    if (lastRow < 6) {
+    if (lastRow < 3) {
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
-        message: "Bảng tính chưa có dữ liệu từ dòng 6 trở đi."
+        message: "Bảng tính chưa có dữ liệu từ dòng 3 trở đi."
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Đọc Cột B (MS) và Cột C (Họ tên) từ dòng 6 đến hết
-    var numRows = lastRow - 5;
-    var rangeData = sheet.getRange(6, 2, numRows, 2).getValues();
+    // Đặt tiêu đề cột F nếu chưa có
+    if (!sheet.getRange(2, 6).getValue()) {
+      sheet.getRange(2, 6).setValue("Thời gian xác nhận");
+    }
+
+    // Đọc cột B (CCCD) và Cột C (Họ tên) từ dòng 3 đến dòng cuối
+    var numRows = lastRow - 2;
+    var rangeData = sheet.getRange(3, 2, numRows, 2).getValues();
     var targetRow = -1;
 
     for (var i = 0; i < rangeData.length; i++) {
-      var rowMs = String(rangeData[i][0] || "").trim().toUpperCase();
+      var rowCccd = String(rangeData[i][0] || "").trim();
+      if (rowCccd.indexOf(".") > -1) { rowCccd = rowCccd.split(".")[0]; }
+      while (rowCccd.length < 12 && rowCccd.length > 0) { rowCccd = "0" + rowCccd; }
+      
+      var rowName = String(rangeData[i][1] || "").trim().toLowerCase();
 
-      // KHỚP CHÍNH XÁC TUYỆT ĐỐI THEO MÃ SỐ (Cột B: B001, B002, ...)
-      // Đảm bảo dù 2 giáo viên trùng họ tên 100% vẫn cập nhật đúng dòng của từng người
-      if (ms && rowMs === ms) {
-        targetRow = i + 6;
+      // Khớp chính xác tuyệt đối theo 12 số CCCD
+      if (cccd && rowCccd === cccd) {
+        targetRow = i + 3;
+        break;
+      }
+      // Dự phòng nếu CCCD chưa khớp nhưng Họ tên khớp
+      if (!cccd && hoTen && rowName === hoTen) {
+        targetRow = i + 3;
         break;
       }
     }
 
     if (targetRow !== -1) {
-      // Cột 4 (D): Xác nhận về thông tin
+      // Cột D (4): Xác nhận về thông tin
       sheet.getRange(targetRow, 4).setValue(status);
 
-      // Cột 5 (E): Ghi chú
+      // Cột E (5): Ghi chú
       sheet.getRange(targetRow, 5).setValue(note);
+
+      // Cột F (6): Thời gian xác nhận
+      sheet.getRange(targetRow, 6).setValue(timeStr);
 
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
         message: "Cập nhật thành công vào dòng " + targetRow,
         row: targetRow,
-        ms: ms,
+        cccd: cccd,
         status: status,
-        note: note
+        note: note,
+        time: timeStr
       })).setMimeType(ContentService.MimeType.JSON);
     } else {
       return ContentService.createTextOutput(JSON.stringify({
         success: false,
-        message: "Không tìm thấy nhân sự có MS: " + ms + " hoặc Tên: " + data.ho_ten
+        message: "Không tìm thấy CCCD: " + cccd
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -82,6 +106,6 @@ function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: "online",
     sheet: "Trang tính1",
-    description: "Webhook đồng bộ xác nhận lương GDNN-GDTX Gò Vấp"
+    description: "Webhook đồng bộ xác nhận phiếu lương GDNN-GDTX Gò Vấp"
   })).setMimeType(ContentService.MimeType.JSON);
 }
